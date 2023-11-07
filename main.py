@@ -1,24 +1,18 @@
-import time
-import pandas as pd
-from tinkoff.invest import Client, RequestError, CandleInterval, HistoricCandle
-import pytz
 import asyncio
-import xlsxwriter
-from tinkoff.invest import AsyncClient, CandleInterval
-from tinkoff.invest.utils import now
-from datetime import datetime, time
-import psycopg2
 
-import utils, monitoringVolume, getNewHistoryData
+from dotenv import load_dotenv
 
-with open('token.txt') as f:
-    TOKEN = f.read()  # ТОКЕН тинькоф апи
+import getNewHistoryData
+import monitoringVolume
+
+load_dotenv()
 
 
 async def main():
-    spisokMaxVolume = await getNewHistoryData.getHistoryCandels()  # Загружаем в базу новые данные за последние дни и получаем значения аномальных обьемов
-
-    asyncio.run(await monitoringVolume.monitoring(spisokMaxVolume))  # Запускаем функцию мониторинга аномальных обьемов
+    # Загружаем в базу новые данные за последние дни и получаем значения аномальных объемов
+    dict_max_volume = await getNewHistoryData.get_history_candles()
+    # Запускаем функцию мониторинга аномальных объемов
+    asyncio.run(await monitoringVolume.monitoring(dict_max_volume))
 
 
 if __name__ == "__main__":
