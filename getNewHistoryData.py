@@ -31,7 +31,7 @@ async def load_db(df, days_before=1, log=False):
         print("Заполнение БД запущено".center(80, '-'), datetime.now())
 
     for index, row in tqdm(df.iterrows(), total=len(df)):
-        await load_ticker(row['ticker'], row['figi'], days_before)
+        await load_ticker(row['ticker'], row['figi'], connection, days_before)
 
     if log:
         print("Заполнение БД завершено".center(80, '-'), datetime.now())
@@ -59,7 +59,7 @@ async def load_ticker(ticker, figi, conn, days_before=1):
                     try:
                         curs.execute(f"insert into {ticker} \
                                         values ('{time}', {volume}) \
-                                        on  conflict (date_time) do update SET date_time = EXCLUDED.date_time")
+                                        on conflict (date_time) do update SET date_time = EXCLUDED.date_time")
                         conn.commit()
 
                     except Exception as error:
@@ -87,6 +87,10 @@ async def update_ticker(ticker, figi, conn):
                 last_date = curs.fetchone()[0]
         except Exception as error:
             print(error)
+
+        if last_date is None:
+            await load_ticker(ticker, figi, conn, days_before=1)
+            return None
 
         async for candle in client.get_all_candles(
                 figi=figi,
