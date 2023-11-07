@@ -9,10 +9,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 db_name = os.environ['DB_NAME']
 db_user = os.environ['DB_USER']
 db_password = os.environ['DB_PASSWORD']
 db_host = os.environ['DB_HOST']
+print(db_name)
+print(db_user)
+print(db_password)
+print(db_host)
 
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_password, host=db_host)
 
@@ -53,3 +58,6 @@ def make_mapping():
         except Exception as error:
             print(row[0])
             print(error)
+
+update_tables()
+# make_mapping()

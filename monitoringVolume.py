@@ -12,7 +12,7 @@ from tinkoff.invest import (
     SubscribeTradesRequest
 )
 
-import utils
+import utils, outputToTelegram
 # Предупреждение никуда не пропадает, просто мы его игнорируем, что бы оно не засоряло вывод
 warnings.filterwarnings('ignore')
 load_dotenv()
@@ -38,7 +38,8 @@ async def monitoring(dict_max_volume):
             await asyncio.sleep(1)
 
     arr_times_direction = []  # Массив всех сделок по текущей минуте формата: ФИГИ, объемы на покупку, объемы на продажу
-    current_time_for_direction = datetime.datetime.now().hour
+    current_time_for_direction = datetime.datetime.now().hour + 100
+    current_time_for_volume = datetime.datetime.now().hour + 100
     arr_times_volume = []
     # 1 элемент время, остальные фиги сколько раз было повторений в минуту. Чем больше
     # повторений фиги тем больше раз повторений аномальных объемов было в минуту
@@ -98,137 +99,40 @@ async def monitoring(dict_max_volume):
             # Второе стрим соединение по объемам для каждой акции, если получаем объем, то печатаем его
             if marketdata.candle:
                 # Если объем больше 1
-                if marketdata.candle.volume > 1:
+                # if marketdata.candle.volume > 1:
                     # получаем значение для каждого элемента, который мы получили из базы
-                    for ticker, value in dict_max_volume.items():
-                        ticker, volume, figi_current = ticker, value['volume'], value['figi']
-                        # если нашли совпадение по фиги из стрима и из массива, полученного из базы
-                        if figi_current == marketdata.candle.figi:
-                            # если срабатывает аномальный объем
-                            if marketdata.candle.volume > volume:
-                                # получаем текущее время для обновления массивов аномальных объемов
-                                now = datetime.datetime.now().minute
-                                # если новая минута, то все обновляем
-                                if arr_times_volume and arr_times_volume[0] != now:
-                                    # Это массив наших фиги, где мы считаем их повторения. Приравниваем его к 0
-                                    # 1 элемент время, далее фиги
-                                    arr_times_volume = [now, figi_current]
+                for ticker, value in dict_max_volume.items():
+                    ticker, volume, figi_current = ticker, value['volume'], value['figi']
+                    # если нашли совпадение по фиги из стрима и из массива, полученного из базы
+                    if figi_current == marketdata.candle.figi:
+                        # если срабатывает аномальный объем
+                        if marketdata.candle.volume > volume:
+                            # print(arr_times_volume)
+                            # получаем текущее время для обновления массивов аномальных объемов
+                            now = datetime.datetime.now().minute
+                            # если новая минута, то все обновляем
+                            if current_time_for_volume != now:
+                                # Это массив наших фиги, где мы считаем их повторения. Приравниваем его к 0
+                                # 1 элемент время, далее фиги
+                                arr_times_volume=[]
+                                current_time_for_volume = now
+                                times = arr_times_volume.count(figi_current)
+                                arr_times_volume.append(figi_current)
+                                outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
+                                                          times)
+                            else:
+                                # считаем сколько раз было уже аномальных объемов
+                                times = arr_times_volume.count(figi_current)
+                                if times == 0:
 
-                                    total_volume = 0
-                                    for i, el in enumerate(arr_times_direction):
-                                        if el[0] == marketdata.candle.figi:
-                                            tmp_buy = el[1]
-                                            tmp_sell = el[2]
-                                            # Обновляем значение в списке, нужно заново пересчитывать % для следующего обьема
-                                            arr_times_direction[i][1] = 0
-                                            # Обновляем значение в списке, нужно заново пересчитывать % для следующего обьема
-                                            arr_times_direction[i][2] = 0
-                                            total_volume = tmp_buy + tmp_sell
-                                            # print(tmp_buy, "tmp_buy")
-                                            # print(tmp_sell, "tmp_sell")
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
+                                                              times)
 
-                                    if total_volume != 0:
-                                        # print(marketdata.candle)
-                                        print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ",
-                                              "покупка:", tmp_buy / total_volume * 100, "%", "продажа:",
-                                              tmp_sell / total_volume * 100, "%")
-                                    else:
-                                        print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ",
-                                              "покупка: 0%", "продажа: 0%")
-                                else:
-                                    # считаем сколько раз было уже аномальных объемов
-                                    times = arr_times_volume.count(figi_current)
-                                    if times == 0:
-                                        total_volume = 0
-                                        for i, el in enumerate(arr_times_direction):
-                                            if el[0] == marketdata.candle.figi:
-                                                tmp_buy = el[1]
-                                                tmp_sell = el[2]
-                                                # Обновляем значение в списке, нужно заново пересчитывать % для следующего обьема
-                                                arr_times_direction[i][1] = 0
-                                                # Обновляем значение в списке
-                                                arr_times_direction[i][2] = 0
-                                                total_volume = tmp_buy + tmp_sell
-                                                # print(tmp_buy, "tmp_buy")
-                                                # print(tmp_sell, "tmp_sell")
+                                    arr_times_volume.append(figi_current)  # добавляем в список фиги
+                                # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
+                                if times > 0 and marketdata.candle.volume > volume*(times + 1):
+                                    # print(arr_times_direction, "arr_times_direction1")
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
+                                                              times)
+                                    arr_times_volume.append(figi_current)
 
-                                        if total_volume != 0:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ",
-                                                  "покупка:", tmp_buy / total_volume * 100, "%", "продажа:",
-                                                  tmp_sell / total_volume * 100, "%")
-                                        else:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ",
-                                                  "покупка: 0%", "продажа: 0%")
-                                        # print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЬЕМ")
-                                        arr_times_volume.append(figi_current)  # добавляем в список фиги
-                                        # print(arr_times_volume)
-                                    # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
-                                    if times == 1 and marketdata.candle.volume - volume > volume:
-                                        total_volume = 0
-                                        for i, el in enumerate(arr_times_direction):
-                                            if el[0] == marketdata.candle.figi:
-                                                tmp_buy = el[1]
-                                                tmp_sell = el[2]
-                                                # Обновляем значение в списке, нужно заново пересчитывать % для следующего объема
-                                                arr_times_direction[i][1] = 0
-                                                # Обновляем значение в списке
-                                                arr_times_direction[i][2] = 0
-                                                total_volume = tmp_buy + tmp_sell
-                                                # print(tmp_buy, "tmp_buy")
-                                                # print(tmp_sell, "tmp_sell")
-
-                                        if total_volume != 0:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ дважды",
-                                                  "покупка:", tmp_buy / total_volume * 100, "%", "продажа:",
-                                                  tmp_sell / total_volume * 100, "%")
-                                        else:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ дважды",
-                                                  "покупка: 0%", "продажа: 0%")
-                                        arr_times_volume.append(figi_current)
-                                        # print(arr_times_volume)
-                                    if times == 2 and marketdata.candle.volume - volume * 2 > volume:
-                                        total_volume = 0
-                                        for i, el in enumerate(arr_times_direction):
-                                            if el[0] == marketdata.candle.figi:
-                                                tmp_buy = el[1]
-                                                tmp_sell = el[2]
-                                                # Обновляем значение в списке, нужно заново пересчитывать % для следующего объема
-                                                arr_times_direction[i][1] = 0
-                                                # Обновляем значение в списке
-                                                arr_times_direction[i][2] = 0
-                                                total_volume = tmp_buy + tmp_sell
-                                                # print(tmp_buy, "tmp_buy")
-                                                # print(tmp_sell, "tmp_sell")
-
-                                        if total_volume != 0:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ трижды",
-                                                  "покупка:", tmp_buy / total_volume * 100, "%", "продажа:",
-                                                  tmp_sell / total_volume * 100, "%")
-                                        else:
-                                            print(ticker, marketdata.candle.volume, volume, "АНОМАЛЬНЫЙ ОБЪЕМ трижды",
-                                                  "покупка: 0%", "продажа: 0%")
-                                        arr_times_volume.append(figi_current)
-                                    if times == 3 and marketdata.candle.volume - volume * 3 > volume:
-                                        total_volume = 0
-                                        for i, el in enumerate(arr_times_direction):
-                                            if el[0] == marketdata.candle.figi:
-                                                tmp_buy = el[1]
-                                                tmp_sell = el[2]
-                                                # Обновляем значение в списке
-                                                arr_times_direction[i][1] = 0
-                                                # Обновляем значение в списке
-                                                arr_times_direction[i][2] = 0
-                                                total_volume = tmp_buy + tmp_sell
-                                                # print(tmp_buy, "tmp_buy")
-                                                # print(tmp_sell, "tmp_sell")
-
-                                        if total_volume != 0:
-                                            print(ticker, marketdata.candle.volume, volume,
-                                                  "АНОМАЛЬНЫЙ ОБЪЕМ четыре раза",
-                                                  "покупка:", tmp_buy / total_volume * 100, "%", "продажа:",
-                                                  tmp_sell / total_volume * 100, "%")
-                                        else:
-                                            print(ticker, marketdata.candle.volume, volume,
-                                                  "АНОМАЛЬНЫЙ ОБЪЕМ четыре раза",
-                                                  "покупка: 0%", "продажа: 0%")
-                                        arr_times_volume.append(figi_current)

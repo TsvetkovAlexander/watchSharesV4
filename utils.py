@@ -34,15 +34,18 @@ def is_holiday(day):
         return False
 
 
-def search_trades_inArr():
-    totalVolume = 0
-    for i, el in enumerate(arrTimesDirecion):
-        if el[0] == marketdata.candle.figi:
-            tmpBuy = el[1]
-            tmpSell = el[2]
-            totalVolume = tmpBuy + tmpSell
-            print(tmpBuy, "tmpBuy")
-            print(tmpSell, "tmpSell")
+
+
+
+# def search_trades_inArr():tmp_sell
+#     totalVolume = 0
+#     for i, el in enumerate(arrTimesDirecion):
+#         if el[0] == marketdata.candle.figi:
+#             tmpBuy = el[1]
+#             tmpSell = el[2]
+#             totalVolume = tmpBuy + tmpSell
+#             print(tmpBuy, "tmpBuy")
+#             print(tmpSell, "tmpSell")
 
 
 # Вообще вот это лучше выделить в отдельный файл
