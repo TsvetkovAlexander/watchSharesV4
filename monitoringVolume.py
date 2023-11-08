@@ -13,6 +13,7 @@ from tinkoff.invest import (
 )
 
 import utils, outputToTelegram
+
 # Предупреждение никуда не пропадает, просто мы его игнорируем, что бы оно не засоряло вывод
 warnings.filterwarnings('ignore')
 load_dotenv()
@@ -40,7 +41,8 @@ async def monitoring(dict_max_volume):
     arr_times_direction = []  # Массив всех сделок по текущей минуте формата: ФИГИ, объемы на покупку, объемы на продажу
     current_time_for_direction = datetime.datetime.now().hour + 100
     current_time_for_volume = datetime.datetime.now().hour + 100
-    arr_times_volume = []
+    arr_times_figi_volume = []
+    total_sum = 0
     # 1 элемент время, остальные фиги сколько раз было повторений в минуту. Чем больше
     # повторений фиги тем больше раз повторений аномальных объемов было в минуту
     async with AsyncClient(TOKEN) as client:
@@ -100,39 +102,42 @@ async def monitoring(dict_max_volume):
             if marketdata.candle:
                 # Если объем больше 1
                 # if marketdata.candle.volume > 1:
-                    # получаем значение для каждого элемента, который мы получили из базы
+                # получаем значение для каждого элемента, который мы получили из базы
                 for ticker, value in dict_max_volume.items():
                     ticker, volume, figi_current = ticker, value['volume'], value['figi']
                     # если нашли совпадение по фиги из стрима и из массива, полученного из базы
                     if figi_current == marketdata.candle.figi:
                         # если срабатывает аномальный объем
                         if marketdata.candle.volume > volume:
-                            # print(arr_times_volume)
+                            # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
+
+
                             # получаем текущее время для обновления массивов аномальных объемов
                             now = datetime.datetime.now().minute
                             # если новая минута, то все обновляем
                             if current_time_for_volume != now:
                                 # Это массив наших фиги, где мы считаем их повторения. Приравниваем его к 0
                                 # 1 элемент время, далее фиги
-                                arr_times_volume=[]
+                                arr_times_figi_volume = []
                                 current_time_for_volume = now
-                                times = arr_times_volume.count(figi_current)
-                                arr_times_volume.append(figi_current)
+                                times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
+                                elFigiVolume = [figi_current, marketdata.candle.volume]
+                                arr_times_figi_volume.append(elFigiVolume)
                                 outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
-                                                          times)
+                                                                     times, storage_volume=0)
                             else:
                                 # считаем сколько раз было уже аномальных объемов
-                                times = arr_times_volume.count(figi_current)
+                                times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
+
                                 if times == 0:
 
-                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
-                                                              times)
+                                    elFigiVolume = [figi_current, marketdata.candle.volume]
+                                    arr_times_figi_volume.append(elFigiVolume)
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,volume,times,storage_volume=0)
 
-                                    arr_times_volume.append(figi_current)  # добавляем в список фиги
-                                # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
-                                if times > 0 and marketdata.candle.volume > volume*(times + 1):
-                                    # print(arr_times_direction, "arr_times_direction1")
-                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
-                                                              times)
-                                    arr_times_volume.append(figi_current)
-
+                                storage_volume=utils.countVolume(arr_times_figi_volume,figi_current)
+                                if times > 0 and marketdata.candle.volume > (volume + storage_volume):
+                                    times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
+                                    elFigiVolume = [figi_current, marketdata.candle.volume]
+                                    arr_times_figi_volume.append(elFigiVolume)
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,volume,times,storage_volume)

@@ -3,9 +3,11 @@
 
 
 import os
+
 import pandas as pd
 import psycopg2
 from dotenv import load_dotenv
+from psycopg2 import sql
 
 load_dotenv()
 
@@ -45,19 +47,37 @@ def make_mapping():
         curs.execute(f"""CREATE TABLE IF NOT EXISTS ticker_mapping (
                            ticker varchar(255),
                            figi varchar(255),
+                           name varchar(255),
                            PRIMARY KEY (ticker));""")
         conn.commit()
 
-    for index, row in excel_data_df[['figi', 'ticker']].iterrows():
+    for index, row in excel_data_df[['figi', 'ticker', 'name']].iterrows():
+        query = sql.SQL(
+            """insert into ticker_mapping values ({ticker}, {figi}, {name}) 
+            on conflict (ticker) do update SET 
+            ticker = EXCLUDED.ticker, 
+            figi = EXCLUDED.figi, 
+            name = EXCLUDED.name""").format(
+            ticker=sql.Literal(row['ticker']),
+            figi=sql.Literal(row['figi']),
+            name=sql.Literal(row['name']))
+        print(query.as_string(conn))
         try:
             with conn.cursor() as curs:
-                curs.execute(f"insert into ticker_mapping \
-                                values ('{row['ticker']}', '{row['figi']}') \
-                                on  conflict (ticker) do update SET ticker = EXCLUDED.ticker")
+                curs.execute(query)
                 conn.commit()
         except Exception as error:
             print(row[0])
             print(error)
 
-update_tables()
+def add_column():
+    with conn.cursor() as curs:
+        curs.execute(f"""ALTER TABLE ticker_mapping ADD name varchar(255);""")
+        conn.commit()
+
+
+# add_column()
 # make_mapping()
+#
+# update_tables()
+

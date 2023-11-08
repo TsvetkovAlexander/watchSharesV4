@@ -34,8 +34,12 @@ def is_holiday(day):
         return False
 
 
-
-
+def countVolume(arr_times_figi_volume, figi_current):
+    total_sum = 0
+    for i in range(len(arr_times_figi_volume)):
+        if arr_times_figi_volume[i][0] == figi_current:
+            total_sum += arr_times_figi_volume[i][1]
+    return total_sum
 
 # def search_trades_inArr():tmp_sell
 #     totalVolume = 0

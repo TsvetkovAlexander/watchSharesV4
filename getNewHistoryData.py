@@ -24,7 +24,7 @@ connection = psycopg2.connect(dbname=db_name, user=db_user, password=db_password
 excel_data_df = pd.read_excel('dataExl.xlsx')
 
 
-async def load_db(df, days_before=1, log=False):
+async def load_db(df, days_before=20, log=False):
     # Функция загрузки данных в БД
     # Параметр days_before указывается на количество дней на сколько нужно загрузить статистику
     if log:
@@ -37,7 +37,7 @@ async def load_db(df, days_before=1, log=False):
         print("Заполнение БД завершено".center(80, '-'), datetime.now())
 
 
-async def load_ticker(ticker, figi, conn, days_before=1):
+async def load_ticker(ticker, figi, conn, days_before=20):
     # Функция добавляет информацию по одному тикеру
     current_date = now().replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -89,7 +89,7 @@ async def update_ticker(ticker, figi, conn):
             print(error)
 
         if last_date is None:
-            await load_ticker(ticker, figi, conn, days_before=1)
+            await load_ticker(ticker, figi, conn, days_before=20)
             return None
 
         async for candle in client.get_all_candles(
@@ -130,7 +130,7 @@ def get_all_max_volume(df, log=False):
     return dict_max_volume
 
 
-def get_max_volume(figi, ticker, conn, quantile=90, log=False):
+def get_max_volume(figi, ticker, conn, quantile=70, log=False):
     # Расчет аномального объема для тикера.
     # Параметр quantile - процентиль (по умолчанию задан 90, в вызове функции можно изменить)
     try:
@@ -158,7 +158,7 @@ async def get_history_candles():
 
     # await update_db(test_df[test_df.ticker == 'SBER'], conn, log=True)
     # dict_max_volume = get_max_volume(test_df[test_df.ticker == 'SBER'], conn, log=True)
-
+    # await load_db(test_df, days_before=20, log=False)
     await update_db(test_df)
     dict_max_volume = get_all_max_volume(test_df)
 
