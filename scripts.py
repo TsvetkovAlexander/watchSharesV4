@@ -11,10 +11,15 @@ from psycopg2 import sql
 
 load_dotenv()
 
+
 db_name = os.environ['DB_NAME']
 db_user = os.environ['DB_USER']
 db_password = os.environ['DB_PASSWORD']
 db_host = os.environ['DB_HOST']
+print(db_name)
+print(db_user)
+print(db_password)
+print(db_host)
 
 conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_password, host=db_host)
 
@@ -65,12 +70,14 @@ def make_mapping():
             print(row[0])
             print(error)
 
-
 def add_column():
     with conn.cursor() as curs:
         curs.execute(f"""ALTER TABLE ticker_mapping ADD name varchar(255);""")
         conn.commit()
 
 
-add_column()
-make_mapping()
+# add_column()
+# make_mapping()
+#
+# update_tables()
+
