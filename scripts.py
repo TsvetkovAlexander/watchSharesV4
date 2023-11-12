@@ -80,4 +80,3 @@ def add_column():
 # make_mapping()
 #
 # update_tables()
-

@@ -123,8 +123,9 @@ async def monitoring(dict_max_volume):
                                 times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
                                 elFigiVolume = [figi_current, marketdata.candle.volume]
                                 arr_times_figi_volume.append(elFigiVolume)
+                                lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
                                 outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
-                                                                     times, storage_volume=0)
+                                                                     times,lastPrice, storage_volume=0)
                             else:
                                 # считаем сколько раз было уже аномальных объемов
                                 times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
@@ -133,11 +134,17 @@ async def monitoring(dict_max_volume):
 
                                     elFigiVolume = [figi_current, marketdata.candle.volume]
                                     arr_times_figi_volume.append(elFigiVolume)
-                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,volume,times,storage_volume=0)
-
+                                    lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
+                                                                         volume,
+                                                                         times, lastPrice, storage_volume=0)
                                 storage_volume=utils.countVolume(arr_times_figi_volume,figi_current)
                                 if times > 0 and marketdata.candle.volume > (volume + storage_volume):
                                     times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
                                     elFigiVolume = [figi_current, marketdata.candle.volume]
                                     arr_times_figi_volume.append(elFigiVolume)
-                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,volume,times,storage_volume)
+                                    lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
+                                    outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
+                                                                         volume,
+                                                                         times, lastPrice, storage_volume=0)
+

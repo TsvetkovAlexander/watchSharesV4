@@ -33,6 +33,13 @@ def is_holiday(day):
     else:
         return False
 
+def cast_money(v):
+    return v.units + v.nano / 1e9  # nano - 9 нулей
+def compare_numbers(price_now, comparing_price):
+    result = round(((price_now / comparing_price) - 1) * 100, 2)
+    if result >0:
+        result = '+'+ str(result)
+    return result
 
 def countVolume(arr_times_figi_volume, figi_current):
     total_sum = 0
@@ -640,3 +647,4 @@ arrTradeInstrument = [  # Список акций и их фиги для пол
     #     interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
     # ),
 ]
+

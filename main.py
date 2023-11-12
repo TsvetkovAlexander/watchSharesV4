@@ -13,7 +13,7 @@ async def main():
     dict_max_volume = await getNewHistoryData.get_history_candles()
     print(dict_max_volume)
     # Запускаем функцию мониторинга аномальных объемов
-    # asyncio.run(await monitoringVolume.monitoring(dict_max_volume))
+    asyncio.run(await monitoringVolume.monitoring(dict_max_volume))
 
 
 if __name__ == "__main__":
