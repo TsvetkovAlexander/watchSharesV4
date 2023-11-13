@@ -48,8 +48,13 @@ def print_anomal_volume(arr_times_direction, ticker, marketdata,
 
 
     total_volume = tmp_buy+tmp_sell
-    buy_percentage = round(tmp_buy / total_volume * 100)
-    sell_percentage = round(tmp_sell / total_volume * 100)
+    if total_volume>0:
+        buy_percentage = round(tmp_buy / total_volume * 100)
+        sell_percentage = round(tmp_sell / total_volume * 100)
+    else:
+        buy_percentage = 0
+        sell_percentage = 0
+
 
     if buy_percentage > sell_percentage:
         # Подчеркивание текста "покупка"

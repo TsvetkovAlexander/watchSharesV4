@@ -21,8 +21,11 @@ def get_max_volume(ticker, quantile=70, log=False):
     try:
         rows = db_function.get_ticker_volume(ticker)
         values = np.array([row[0] for row in rows])
-        percentile = np.percentile(values, quantile)
-        rounded_percentile = round(percentile)
+        if len(values) < 500:
+            rounded_percentile = None
+        else:
+            percentile = np.percentile(values, quantile)
+            rounded_percentile = round(percentile)
 
         if log == 'Full':
             print(f'{ticker} {quantile}-ый процентиль - {rounded_percentile}')
@@ -47,8 +50,12 @@ def get_all_max_volume(df, log=False):
 
         dict_max_volume[ticker] = {'figi': figi, 'volume': volume, 'name': name, 'lot': lot}
 
-        if log:
-            print("Получение аномальных объемов завершено".center(80, '-'), datetime.now())
+
+        if volume is not None:
+            dict_max_volume[ticker] = {'figi': figi, 'volume': volume, 'name': name, 'lot': lot}
+
+    if log:
+        print("Получение аномальных объемов завершено".center(80, '-'), datetime.now())
     return dict_max_volume
 
 
