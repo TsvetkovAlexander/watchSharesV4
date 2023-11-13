@@ -48,9 +48,6 @@ def get_all_max_volume(df, log=False):
         figi = row['figi']
         name = row['name']
 
-        dict_max_volume[ticker] = {'figi': figi, 'volume': volume, 'name': name, 'lot': lot}
-
-
         if volume is not None:
             dict_max_volume[ticker] = {'figi': figi, 'volume': volume, 'name': name, 'lot': lot}
 
@@ -62,6 +59,7 @@ def get_all_max_volume(df, log=False):
 async def get_history_candles():
     # Из таблицы удаляются тикеры по которым нет данных
     test_df = excel_data_df[~excel_data_df.ticker.isin([])][['ticker', 'figi', 'name', 'lot']]
+
 
     # await update_db(test_df[test_df.ticker == 'SBER'], conn, log=True)
     # dict_max_volume = get_max_volume(test_df[test_df.ticker == 'SBER'], conn, log=True)
