@@ -3,6 +3,7 @@ from datetime import timedelta, timezone, datetime
 
 import psycopg2
 from dotenv import load_dotenv
+from psycopg2 import sql
 from pytz import timezone
 from tinkoff.invest import AsyncClient, CandleInterval
 from tinkoff.invest.utils import now
@@ -54,10 +55,16 @@ async def load_ticker_data(ticker, figi, conn, days_before=30):
             if not utils.is_holiday(time):
                 time = time.strftime("%Y-%m-%d %H:%M:%S")
                 with conn.cursor() as curs:
+                    query = sql.SQL("insert into {ticker} \
+                                        values ({time}, {volume}) \
+                                        on conflict (date_time) do update \
+                                        SET date_time = EXCLUDED.date_time").format(
+                        ticker=sql.Identifier(ticker),
+                        time=sql.Literal(time),
+                        volume=sql.Literal(volume)
+                    )
                     try:
-                        curs.execute(f"insert into {ticker} \
-                                        values ('{time}', {volume}) \
-                                        on conflict (date_time) do update SET date_time = EXCLUDED.date_time")
+                        curs.execute(query)
                         conn.commit()
 
                     except Exception as error:
@@ -70,7 +77,10 @@ async def delete_old_ticker(ticker, conn, how_old=30):
     border_date = border_date.date().strftime("%Y-%m-%d")
 
     with conn.cursor() as curs:
-        query = f"""delete from {ticker} where date_time < '{border_date}'"""
+        query = sql.SQL("""delete from {ticker} where date_time < {border_date}""").format(
+            ticker=sql.Identifier(ticker),
+            border_date=sql.Literal(border_date)
+        )
         try:
             curs.execute(query)
             conn.commit()
@@ -82,13 +92,15 @@ async def delete_old_ticker(ticker, conn, how_old=30):
 def check_ticker_table_exist(ticker, conn):
     try:
         with conn.cursor() as curs:
-            query = f"""SELECT EXISTS (
+            query = sql.SQL("""SELECT EXISTS (
                             SELECT FROM 
                                 pg_tables
                             WHERE 
                                 schemaname = 'public' AND 
                                 tablename  = '{ticker}'
-                            );"""
+                            )""").format(
+                ticker=sql.Identifier(ticker)
+            )
             curs.execute(query)
             return curs.fetchone()[0]
     except Exception as error:
@@ -98,10 +110,12 @@ def check_ticker_table_exist(ticker, conn):
 def create_ticker_table(ticker, conn):
     try:
         with conn.cursor() as curs:
-            curs.execute(f"""CREATE TABLE IF NOT EXISTS {ticker} (
+            query = sql.SQL("""CREATE TABLE IF NOT EXISTS {ticker} (
                                date_time TIMESTAMP with time zone null,
                                volume integer,
-                               PRIMARY KEY (date_time));""")
+                               PRIMARY KEY (date_time));""").format(
+                ticker=sql.Identifier(ticker))
+            curs.execute(query)
             conn.commit()
     except Exception as error:
         print(error)
@@ -129,11 +143,13 @@ async def update_db(df, conn=connection, delete_old_data=True, log=False):
 def get_last_date(ticker, conn):
     try:
         with conn.cursor() as curs:
-            curs.execute(f"select max(date_time) from {ticker}")
+            query = sql.SQL("select max(date_time) from {ticker}").format(
+                ticker=sql.Identifier(ticker),
+            )
+            curs.execute(query)
             last_date = curs.fetchone()[0]
     except Exception as error:
         print(error)
-
     return last_date
 
 
@@ -143,7 +159,7 @@ async def update_ticker(ticker, figi, conn):
         last_date = get_last_date(ticker, conn)
 
         if last_date is None:
-            await load_ticker_data(ticker, figi, conn, days_before=30)
+            await load_ticker_data(ticker, figi, conn, days_before=1)
             return None
 
         async for candle in client.get_all_candles(
@@ -160,10 +176,16 @@ async def update_ticker(ticker, figi, conn):
             if not utils.is_holiday(time):
                 time = time.strftime("%Y-%m-%d %H:%M:%S")
                 with conn.cursor() as curs:
+                    query = sql.SQL("insert into {ticker} \
+                                        values ({time}, {volume}) \
+                                        on  conflict (date_time) do update SET \
+                                        date_time = EXCLUDED.date_time").format(
+                        ticker=sql.Identifier(ticker),
+                        time=sql.Literal(time),
+                        volume=sql.Literal(volume)
+                    )
                     try:
-                        curs.execute(f"insert into {ticker} \
-                                        values ('{time}', {volume}) \
-                                        on  conflict (date_time) do update SET date_time = EXCLUDED.date_time")
+                        curs.execute(query)
                         conn.commit()
 
                     except Exception as error:
@@ -173,7 +195,10 @@ async def update_ticker(ticker, figi, conn):
 def get_ticker_volume(ticker, conn=connection):
     try:
         with conn.cursor() as curs:
-            curs.execute(f"SELECT volume FROM {ticker}")
+            query = sql.SQL("SELECT volume FROM {ticker}").format(
+                ticker=sql.Identifier(ticker)
+            )
+            curs.execute(query)
             rows = curs.fetchall()
             return rows
     except Exception as error:
