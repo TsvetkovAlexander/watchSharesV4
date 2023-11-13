@@ -3,7 +3,7 @@ import datetime
 import utils
 
 
-def print_anomal_volume(arr_times_direction,ticker, marketdata, volume, times, lastPrice, storage_volume):
+def print_anomal_volume(arr_times_direction,ticker, marketdata, volume, times, lastPrice, todayOpenPrice, storage_volume):
     tmp_buy=0
     tmp_sell=0
 
@@ -29,12 +29,13 @@ def print_anomal_volume(arr_times_direction,ticker, marketdata, volume, times, l
     total_volume = tmp_buy+tmp_sell
     if total_volume != 0:
         # print(storage_volume,"storage_volume")
-        print(marketdata.candle, "marketdata.candle.volume")
+        # print(marketdata.candle, "marketdata.candle.volume")
         print(ticker, "пороговый обьем: ", volume,  "Обьем: ", float(round(float((marketdata.candle.volume-storage_volume)/100)))/10,"M₽",  '\n',
               "число раз за минуту: ", times + 1,'\n',
               "текущая цена: ",  Price_Now,'\n',
-              print(f"Изменение цены:"),
-            print(f"    на объеме:", percentage_change, "%"),
+              "Изменение цены:",'\n'
+            "  на объеме:", percentage_change, "%",'\n',
+              "  за день:", percentage_change, "%",'\n',
                  "покупка:", round(tmp_buy / total_volume * 100), "%", "продажа:", round(tmp_sell / total_volume * 100), "%",'\n',
               "Время: ",datetime.datetime.now().replace(microsecond=0))
     else:

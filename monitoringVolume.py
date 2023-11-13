@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import os
 import warnings
-
+from datetime import timedelta, timezone
 from dotenv import load_dotenv
 from tinkoff.invest import (
     AsyncClient,
@@ -11,7 +11,7 @@ from tinkoff.invest import (
     SubscriptionAction,
     SubscribeTradesRequest
 )
-
+from tinkoff.invest import AsyncClient, CandleInterval
 import utils, outputToTelegram
 
 # Предупреждение никуда не пропадает, просто мы его игнорируем, что бы оно не засоряло вывод
@@ -124,8 +124,22 @@ async def monitoring(dict_max_volume):
                                 elFigiVolume = [figi_current, marketdata.candle.volume]
                                 arr_times_figi_volume.append(elFigiVolume)
                                 lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
+
+                                today = datetime.datetime.now().date()
+                                start_time = datetime.datetime.combine(today, datetime.datetime.min.time()) + timedelta(hours=10)
+                                end_time = start_time + timedelta(minutes=1)
+
+
+                                # Вывод результатов
+
+                                todayOpenPrice = await client.market_data.get_candles(
+                                    figi=figi_current,
+                                    from_=start_time, to=end_time,
+                                    interval=CandleInterval.CANDLE_INTERVAL_1_MIN
+                                )
+                                print(todayOpenPrice.candles[0].open)
                                 outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata, volume,
-                                                                     times,lastPrice, storage_volume=0)
+                                                                     times,lastPrice,todayOpenPrice, storage_volume=0)
                             else:
                                 # считаем сколько раз было уже аномальных объемов
                                 times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
@@ -137,14 +151,20 @@ async def monitoring(dict_max_volume):
                                     lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
                                     outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
                                                                          volume,
-                                                                         times, lastPrice, storage_volume=0)
+                                                                         times, lastPrice,todayOpenPrice, storage_volume=0)
                                 storage_volume=utils.countVolume(arr_times_figi_volume,figi_current)
                                 if times > 0 and marketdata.candle.volume > (volume + storage_volume):
                                     times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
                                     elFigiVolume = [figi_current, marketdata.candle.volume]
                                     arr_times_figi_volume.append(elFigiVolume)
                                     lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
+                                    todayOpenPrice = await client.market_data.get_candles(
+                                        figi=figi_current,
+                                        from_=start_time, to=end_time,
+                                        interval=CandleInterval.CANDLE_INTERVAL_1_MIN
+                                    )
+                                    print(todayOpenPrice.candles[0].open)
                                     outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
                                                                          volume,
-                                                                         times, lastPrice, storage_volume=0)
+                                                                         times, lastPrice,todayOpenPrice, storage_volume=0)
 
