@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+from tinkoff.invest import AsyncClient, CandleInterval
 import holidays
 from tinkoff.invest import (
     CandleInstrument,
@@ -47,6 +47,10 @@ def countVolume(arr_times_figi_volume, figi_current):
         if arr_times_figi_volume[i][0] == figi_current:
             total_sum += arr_times_figi_volume[i][1]
     return total_sum
+
+
+
+
 
 # def search_trades_inArr():tmp_sell
 #     totalVolume = 0
