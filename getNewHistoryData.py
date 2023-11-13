@@ -15,21 +15,7 @@ TOKEN = os.environ['TOKEN']
 excel_data_df = pd.read_excel('dataExl.xlsx')
 
 
-def get_all_max_volume(df, log=False):
-    if log:
-        print("Запуск получения аномальных объемов".center(80, '-'), datetime.now())
-
-    dict_max_volume = dict()
-    for index, row in df.iterrows():
-        ticker, figi, volume = get_max_volume(row['figi'], row['ticker'])
-        dict_max_volume[ticker] = {'figi': figi, 'volume': volume}
-
-    if log:
-        print("Получение аномальных объемов завершено".center(80, '-'), datetime.now())
-    return dict_max_volume
-
-
-def get_max_volume(figi, ticker, quantile=70, log=False):
+def get_max_volume(ticker, quantile=70, log=False):
     # Расчет аномального объема для тикера.
     # Параметр quantile - процентиль (по умолчанию задан 90, в вызове функции можно изменить)
     try:
@@ -45,12 +31,30 @@ def get_max_volume(figi, ticker, quantile=70, log=False):
         print(error)
         rounded_percentile = None
 
-    return ticker, figi, rounded_percentile
+    return ticker, rounded_percentile
+
+
+def get_all_max_volume(df, log=False):
+    if log:
+        print("Запуск получения аномальных объемов".center(80, '-'), datetime.now())
+
+    dict_max_volume = dict()
+    for index, row in df.iterrows():
+        ticker, volume = get_max_volume(row['ticker'])
+        lot = row['lot']
+        figi = row['figi']
+        name = row['name']
+
+        dict_max_volume[ticker] = {'figi': figi, 'volume': volume, 'name': name, 'lot': lot}
+
+        if log:
+            print("Получение аномальных объемов завершено".center(80, '-'), datetime.now())
+    return dict_max_volume
 
 
 async def get_history_candles():
     # Из таблицы удаляются тикеры по которым нет данных
-    test_df = excel_data_df[~excel_data_df.ticker.isin(['VKCO', 'ISKJ', 'SFTL'])][['ticker', 'figi']]
+    test_df = excel_data_df[~excel_data_df.ticker.isin([])][['ticker', 'figi', 'name', 'lot']]
 
     # await update_db(test_df[test_df.ticker == 'SBER'], conn, log=True)
     # dict_max_volume = get_max_volume(test_df[test_df.ticker == 'SBER'], conn, log=True)
