@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 from tinkoff.invest import AsyncClient, CandleInterval
 import holidays
 from tinkoff.invest import (
@@ -7,9 +8,35 @@ from tinkoff.invest import (
 )
 
 
+async def find_prices(figi_current, marketdata, arr_times_figi_volume, client):
+    today = datetime.datetime.now().date()
+    current_time = datetime.datetime.now().time()
+    start_time = datetime.datetime.combine(today, datetime.datetime.min.time()) + timedelta(hours=10)
+    end_time = start_time + timedelta(minutes=1)
+    elFigiVolume = [figi_current, marketdata.candle.volume]
+    arr_times_figi_volume.append(elFigiVolume)
+    lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
+    todayOpenPrice = await client.market_data.get_candles(
+        figi=figi_current,
+        from_=start_time, to=end_time,
+        interval=CandleInterval.CANDLE_INTERVAL_1_MIN
+    )
+    if current_time.hour == 10 and current_time.minute == 0:
+        return lastPrice, todayOpenPrice
+
+    if not todayOpenPrice:
+        for i in range(1, 10):
+            todayOpenPrice = await client.market_data.get_candles(
+                figi=figi_current,
+                from_=start_time + timedelta(minutes=i), to=end_time + timedelta(minutes=i),
+                interval=CandleInterval.CANDLE_INTERVAL_1_MIN
+            )
+            if todayOpenPrice:
+                break
+    return lastPrice, todayOpenPrice
 # получение выходных, чтобы в эти дни не получать данные по свечам.
 def get_weekend_dates():
-    today = datetime.today()
+    today = datetime. datetime.today()
     last_month = today.replace(day=1) - timedelta(days=45)
     first_day = last_month.replace(day=1)
 
@@ -27,7 +54,7 @@ def get_weekend_dates():
 
 
 def is_holiday(day):
-    holidays_list = holidays.RU(years=datetime.today().year).keys()
+    holidays_list = holidays.RU(years=datetime. datetime.today().year).keys()
     if day in holidays_list or day.weekday() == 5 or day.weekday() == 6:
         return True
     else:

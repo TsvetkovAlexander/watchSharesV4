@@ -8,6 +8,7 @@ def print_anomal_volume(arr_times_direction, ticker, marketdata,
                                                                      times, lastPrice, todayOpenPrice,
                                                                      old_arr_times_direction, old_time_for_direction,
                                                                      storage_volume=0):
+    current_time = datetime.datetime.now().time()
 
 
     tmp_buy=0
@@ -15,8 +16,12 @@ def print_anomal_volume(arr_times_direction, ticker, marketdata,
 
     Price_Now=utils.cast_money(lastPrice.last_prices[0].price)
     Price_candel_Open=utils.cast_money(marketdata.candle.open)
-    Price_candel_Open_today=utils.cast_money(todayOpenPrice.candles[0].open)
+    print(todayOpenPrice,ticker,"todayOpenPrice")
 
+    Price_candel_Open_today=utils.cast_money(todayOpenPrice.candles[0].open)
+    if current_time.hour == 10 and current_time.minute == 0:
+        Price_candel_Open_today=Price_candel_Open
+    print(Price_candel_Open_today,"Price_candel_Open_today")
     percentage_change = utils.compare_numbers(Price_Now, Price_candel_Open)
     percentage_change_today = utils.compare_numbers(Price_Now,  Price_candel_Open_today)
 

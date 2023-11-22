@@ -15,7 +15,7 @@ TOKEN = os.environ['TOKEN']
 excel_data_df = pd.read_excel('dataExl.xlsx')
 
 
-def get_max_volume(ticker, quantile=70, log=False):
+def get_max_volume(ticker, quantile=50, log=False):
     # Расчет аномального объема для тикера.
     # Параметр quantile - процентиль (по умолчанию задан 90, в вызове функции можно изменить)
     try:
