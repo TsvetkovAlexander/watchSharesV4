@@ -46,8 +46,9 @@ async def monitoring(dict_max_volume):
     current_time_for_volume = datetime.datetime.now().hour + 100
     arr_times_figi_volume = []
     total_sum = 0
-
-
+    # lastPrice = None
+    # todayOpenPrice= None
+    storage_volume=0
 
     # 1 элемент время, остальные фиги сколько раз было повторений в минуту. Чем больше
     # повторений фиги тем больше раз повторений аномальных объемов было в минуту
@@ -141,9 +142,10 @@ async def monitoring(dict_max_volume):
                                 arr_times_figi_volume = []
                                 current_time_for_volume = now
                                 times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
-
                                 lastPrice, todayOpenPrice = await utils.find_prices(figi_current, marketdata,
-                                                                              arr_times_figi_volume, client)
+                                                                                    arr_times_figi_volume,
+                                                                                    client)
+
 
                                 outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
                                                                      volume,
@@ -167,6 +169,7 @@ async def monitoring(dict_max_volume):
                                                                          storage_volume=0)
 
                                 storage_volume = utils.countVolume(arr_times_figi_volume, figi_current)
+                                # print(storage_volume,"storage_volume")
                                 if times > 0 and marketdata.candle.volume > (volume + storage_volume):
                                     times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
                                     lastPrice, todayOpenPrice = await utils.find_prices(figi_current, marketdata,
@@ -176,4 +179,4 @@ async def monitoring(dict_max_volume):
                                     outputToTelegram.print_anomal_volume(arr_times_direction, ticker, marketdata,
                                                                          volume,
                                                                          times, lastPrice, todayOpenPrice,old_arr_times_direction,old_time_for_direction,
-                                                                         storage_volume=0)
+                                                                         storage_volume)
