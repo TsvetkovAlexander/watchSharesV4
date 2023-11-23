@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-import db_function
-from db_function import update_db
+from db_function import load_db, update_db, get_ticker_data
 
 load_dotenv()
 # Загрузка переменных окружения
@@ -19,12 +18,18 @@ def get_max_volume(ticker, quantile=50, log=False):
     # Расчет аномального объема для тикера.
     # Параметр quantile - процентиль (по умолчанию задан 90, в вызове функции можно изменить)
     try:
-        rows = db_function.get_ticker_volume(ticker)
-        values = np.array([row[0] for row in rows])
-        if len(values) < 500:
+        rows = get_ticker_data(ticker)
+        volume = np.array([row[0] for row in rows])
+        close_price = np.array([row[1] for row in rows])
+        volume_rub = np.array([row[2] for row in rows])
+
+        # Рабочая величина, с чем надо работать. По желанию заменить
+        value = volume
+
+        if len(value) < 500:
             rounded_percentile = None
         else:
-            percentile = np.percentile(values, quantile)
+            percentile = np.percentile(value, quantile)
             rounded_percentile = round(percentile)
 
         if log == 'Full':

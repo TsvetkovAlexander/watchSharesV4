@@ -23,52 +23,92 @@ DB_HOST = os.environ['DB_HOST']
 connection = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
 
 
-async def load_db(df, conn=connection, days_before=30, log=False):
+async def load_db(df, conn=connection, days_before=1, log=False):
     # Функция загрузки данных в БД
     # Параметр days_before указывается на количество дней на сколько нужно загрузить статистику
     if log:
         print("Заполнение БД запущено".center(80, '-'), datetime.now())
 
     for index, row in tqdm(df.iterrows(), total=len(df)):
-        await load_ticker_data(row['ticker'], row['figi'], conn, days_before)
+        table_exist = check_ticker_table_exist(row['ticker'], conn)
+        if not table_exist:
+            if log:
+                print(f"Не найдена таблица {row['ticker']}".center(80, '-'))
+            create_ticker_table(row['ticker'], conn)
+
+        await load_ticker_data(row['ticker'], row['figi'], days_before)
 
     if log:
         print("Заполнение БД завершено".center(80, '-'), datetime.now())
 
 
-async def load_ticker_data(ticker, figi, conn, days_before=30):
-    # Функция добавляет информацию по одному тикеру
-    current_date = now().replace(hour=0, minute=0, second=0, microsecond=0)
+async def get_candles(figi, ticker, days_before=None, last_date=None):
+    if days_before:
+        current_date = now().replace(hour=0, minute=0, second=0, microsecond=0)
+        from_moment = current_date - timedelta(days=days_before)
+    else:
+        from_moment = last_date
 
     async with AsyncClient(TOKEN) as client:
         async for candle in client.get_all_candles(
                 figi=figi,
-                from_=current_date - timedelta(days=days_before),
+                from_=from_moment,
                 interval=CandleInterval.CANDLE_INTERVAL_1_MIN,
         ):
-
             tz = timezone('Europe/Moscow')
-
-            volume = candle.volume
             time = candle.time.astimezone(tz)
+            volume = candle.volume
+            close_price = utils.cast_money(candle.close)
+            volume_rub = volume * close_price
 
-            if not utils.is_holiday(time):
-                time = time.strftime("%Y-%m-%d %H:%M:%S")
-                with conn.cursor() as curs:
-                    query = sql.SQL("insert into {ticker} \
-                                        values ({time}, {volume}) \
-                                        on conflict (date_time) do update \
-                                        SET date_time = EXCLUDED.date_time").format(
-                        ticker=sql.Identifier(ticker),
-                        time=sql.Literal(time),
-                        volume=sql.Literal(volume)
-                    )
-                    try:
-                        curs.execute(query)
-                        conn.commit()
+    candles = {'figi': figi,
+               'ticker': ticker,
+               'time': time,
+               'volume': volume,
+               'close_price': close_price,
+               'volume_rub': volume_rub}
 
-                    except Exception as error:
-                        print(error)
+    return candles
+
+
+def insert_candles(candles, conn=connection):
+    if not utils.is_holiday(candles['time']):
+        time = candles['time'].strftime("%Y-%m-%d %H:%M:%S")
+        with conn.cursor() as curs:
+            query = sql.SQL("insert into {ticker} \
+                                values ({time}, {volume}, {close_price}, {volume_rub}) \
+                                on  conflict (date_time) do update SET \
+                                date_time = EXCLUDED.date_time").format(
+                ticker=sql.Identifier(candles['ticker']),
+                time=sql.Literal(time),
+                volume=sql.Literal(candles['volume']),
+                close_price=sql.Literal(candles['close_price']),
+                volume_rub=sql.Literal(candles['volume_rub'])
+            )
+            try:
+                curs.execute(query)
+                conn.commit()
+
+            except Exception as error:
+                print(error)
+
+
+async def load_ticker_data(ticker, figi, days_before=1):
+    # Функция добавляет информацию по одному тикеру
+    candles = await get_candles(figi, ticker, days_before=days_before)
+    insert_candles(candles)
+
+
+async def update_ticker(ticker, figi, conn):
+    # Функция обновляет данные в БД до последней актуальной записи для одного тикера
+    last_date = get_last_date(ticker, conn)
+
+    if last_date is None:
+        await load_ticker_data(figi, ticker, days_before=1)
+        return None
+
+    candles = await get_candles(figi, ticker, last_date=last_date)
+    insert_candles(candles)
 
 
 async def delete_old_ticker(ticker, conn, how_old=30):
@@ -112,7 +152,7 @@ def create_ticker_table(ticker, conn):
         with conn.cursor() as curs:
             query = sql.SQL("""CREATE TABLE IF NOT EXISTS {ticker} (
                                date_time TIMESTAMP with time zone null,
-                               volume integer,
+                               volume integer, close_price integer, volume_rub integer,
                                PRIMARY KEY (date_time));""").format(
                 ticker=sql.Identifier(ticker))
             curs.execute(query)
@@ -153,49 +193,46 @@ def get_last_date(ticker, conn):
     return last_date
 
 
-async def update_ticker(ticker, figi, conn):
-    # Функция обновляет данные в БД до последней актуальной записи для одного тикера
-    async with AsyncClient(TOKEN) as client:
-        last_date = get_last_date(ticker, conn)
+def get_ticker_mapping(figi=None, ticker=None, conn=connection):
+    assert figi is None or ticker is None, 'Надо задать либо ticker либо figi'
 
-        if last_date is None:
-            await load_ticker_data(ticker, figi, conn, days_before=1)
-            return None
+    if ticker:
+        with conn.cursor() as curs:
+            query = sql.SQL("select * from ticker_mapping where ticker={ticker}").format(
+                ticker=sql.Literal(ticker),
+            )
+            try:
+                curs.execute(query)
+                mapping = curs.fetchone()
+            except Exception as error:
+                print(error)
 
-        async for candle in client.get_all_candles(
-                figi=figi,
-                from_=last_date,
-                interval=CandleInterval.CANDLE_INTERVAL_1_MIN,
-        ):
+    if figi:
+        with conn.cursor() as curs:
+            query = sql.SQL("select * from ticker_mapping where figi={figi}").format(
+                figi=sql.Literal(figi),
+            )
+            try:
+                curs.execute(query)
+                mapping = curs.fetchone()
+            except Exception as error:
+                print(error)
 
-            tz = timezone('Europe/Moscow')
+    mapping = {'ticker': mapping[0],
+               'figi': mapping[1],
+               'name': mapping[2],
+               'lot': mapping[3],
+               'short_enabled_flag': mapping[4],
+               'units': mapping[5],
+               'nano': mapping[6]}
 
-            volume = candle.volume
-            time = candle.time.astimezone(tz)
-
-            if not utils.is_holiday(time):
-                time = time.strftime("%Y-%m-%d %H:%M:%S")
-                with conn.cursor() as curs:
-                    query = sql.SQL("insert into {ticker} \
-                                        values ({time}, {volume}) \
-                                        on  conflict (date_time) do update SET \
-                                        date_time = EXCLUDED.date_time").format(
-                        ticker=sql.Identifier(ticker),
-                        time=sql.Literal(time),
-                        volume=sql.Literal(volume)
-                    )
-                    try:
-                        curs.execute(query)
-                        conn.commit()
-
-                    except Exception as error:
-                        print(error)
+    return mapping
 
 
-def get_ticker_volume(ticker, conn=connection):
+def get_ticker_data(ticker, conn=connection):
     try:
         with conn.cursor() as curs:
-            query = sql.SQL("SELECT volume FROM {ticker}").format(
+            query = sql.SQL("SELECT volume, close_price, volume_rub FROM {ticker}").format(
                 ticker=sql.Identifier(ticker)
             )
             curs.execute(query)
