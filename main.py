@@ -14,7 +14,6 @@ async def main():
     # Загружаем в базу новые данные за последние дни и получаем значения аномальных объемов
     dict_max_volume = await getNewHistoryData.get_history_candles()
     print(dict_max_volume)
-    # asyncio.run(await monitoringVolume.monitoring(dict_max_volume))
     # Запускаем функцию мониторинга аномальных объемов
     while True:
         try:

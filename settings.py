@@ -1,1 +1,4 @@
-# тут пока пусто
+class GlobalSetting:
+    days_before = 10
+    how_old = 10
+    quantile = 50
