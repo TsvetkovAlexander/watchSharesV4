@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from psycopg2 import sql
 from tinkoff.invest import Client, InstrumentStatus
 
+from db_function import check_ticker_table_exist, create_ticker_table
+
 load_dotenv()
 
 TOKEN = os.environ['TOKEN']
@@ -27,7 +29,7 @@ conn = psycopg2.connect(dbname=db_name, user=db_user, password=db_password, host
 excel_data_df = pd.read_excel('dataExl.xlsx')
 
 
-def update_available_ticker():
+def update_available_ticker(): # если появилась новая акция обновляем эксель
     with Client(TOKEN) as cl:
         instruments = cl.instruments
 
@@ -52,7 +54,7 @@ def update_available_ticker():
         df = pd.DataFrame(ru_share)
         df.to_excel('dataExl.xlsx', index=False)
 
-
+# update_available_ticker()
 def update_tables():
     for index, row in excel_data_df[['figi', 'ticker']].iterrows():
         try:
@@ -68,9 +70,12 @@ def update_tables():
             print(row[0])
             print(error)
 
-
+# update_tables()
 def add_columns_to_ticker():
     for index, row in excel_data_df[['figi', 'ticker']].iterrows():
+        table_exist = check_ticker_table_exist(row['ticker'], conn)
+        if not table_exist:
+            create_ticker_table(row['ticker'], conn)
         try:
             with conn.cursor() as curs:
                 query = sql.SQL(
@@ -130,7 +135,10 @@ def make_mapping():
             print(error)
 
 
+
 def add_column():
     with conn.cursor() as curs:
         curs.execute(f"""ALTER TABLE ticker_mapping ADD name varchar(255);""")
         conn.commit()
+# update_available_ticker()
+# make_mapping()
