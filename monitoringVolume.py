@@ -163,7 +163,7 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_direction,
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
-                                                                               old_time_for_direction,medium_price,
+                                                                               old_time_for_direction,medium_price,name,
                                                                                times, storage_volume=0,storage_volumeRub=0)
 
                                 storage_volume,storage_volumeRub = utils.countVolume(arr_times_figi_volume, figi_current)
