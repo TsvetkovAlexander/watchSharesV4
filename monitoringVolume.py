@@ -49,7 +49,7 @@ async def monitoring(dict_max_volume):
     # lastPrice = None
     # todayOpenPrice= None
     storage_volume = 0
-
+    holidays= utils.get_weekend_dates()
     # 1 элемент время, остальные фиги сколько раз было повторений в минуту. Чем больше
     # повторений фиги тем больше раз повторений аномальных объемов было в минуту
     async with AsyncClient(TOKEN) as client:
@@ -149,7 +149,7 @@ async def monitoring(dict_max_volume):
                                                                            arr_times_direction,
                                                                            arr_times_figi_volume,
                                                                            old_arr_times_direction,
-                                                                           old_time_for_direction, medium_price, name,
+                                                                           old_time_for_direction, medium_price, name,holidays,
                                                                            times=0, storage_volume=0,
                                                                            storage_volumeRub=0)
 
@@ -165,7 +165,7 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
                                                                                old_time_for_direction, medium_price,
-                                                                               name,
+                                                                               name,holidays,
                                                                                times, storage_volume=0,
                                                                                storage_volumeRub=0)
 
@@ -187,5 +187,5 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
                                                                                old_time_for_direction, medium_price,
-                                                                               name,
+                                                                               name,holidays,
                                                                                times, storage_volume, storage_volumeRub)

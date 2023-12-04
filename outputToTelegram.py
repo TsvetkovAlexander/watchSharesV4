@@ -20,7 +20,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                               figi_current,
                               arr_times_direction,
                               arr_times_figi_volume,
-                              old_arr_times_direction, old_time_for_direction,medium_price,name,
+                              old_arr_times_direction, old_time_for_direction,medium_price,name,holidays,
                               times, storage_volume,storage_volumeRub):
 
     current_time = datetime.datetime.now().time()
@@ -28,7 +28,7 @@ async def print_anomal_volume(client, ticker, marketdata,
     tmp_sell = 0
     # print("storage_volume",storage_volume)
     lastPrice, todayOpenPrice = await utils.find_prices(figi_current, marketdata,
-                                                        arr_times_figi_volume,medium_price,
+                                                        arr_times_figi_volume,medium_price,holidays,
                                                         client)
 
 
@@ -37,9 +37,8 @@ async def print_anomal_volume(client, ticker, marketdata,
     # print(marketdata.candle,"marketdata.candle")
     # print(todayOpenPrice,ticker,"todayOpenPrice")
 
-    Price_candel_Open_today = utils.cast_money(todayOpenPrice.candles[0].open)
-    if current_time.hour == 10 and current_time.minute == 0:
-        Price_candel_Open_today = Price_candel_Open
+    Price_candel_Open_today = utils.cast_money(todayOpenPrice.candles[0].close)
+    # print(todayOpenPrice.candles[0].close, "todayOpenPrice.candles[0].close")
     # print(Price_candel_Open_today, "Price_candel_Open_today")
     percentage_change = utils.compare_numbers(Price_Now, Price_candel_Open)
     percentage_change_today = utils.compare_numbers(Price_Now, Price_candel_Open_today)
@@ -120,7 +119,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
 
-        bot.send_message(channel_id, message)
+        # bot.send_message(channel_id, message)
 
         print(message)
         # print(ticker, " ", name,'\n',
@@ -152,5 +151,5 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
 
-        bot.send_message(channel_id, message)
+        # bot.send_message(channel_id, message)
         print(message)

@@ -8,7 +8,7 @@ from tinkoff.invest import (
 )
 
 
-async def find_prices(figi_current, marketdata, arr_times_figi_volume, medium_price, client):
+async def find_prices(figi_current, marketdata, arr_times_figi_volume, medium_price,holidays, client):
     today = datetime.datetime.now().date()
     current_time = datetime.datetime.now().time()
     start_time = datetime.datetime.combine(today, datetime.datetime.min.time()) + timedelta(hours=10)
@@ -16,20 +16,27 @@ async def find_prices(figi_current, marketdata, arr_times_figi_volume, medium_pr
     elFigiVolume = [figi_current, marketdata.candle.volume, medium_price * marketdata.candle.volume]
     arr_times_figi_volume.append(elFigiVolume)
     lastPrice = await client.market_data.get_last_prices(figi=[figi_current])
-    todayOpenPrice = 0
-    if (current_time.hour == 10 and current_time.minute == 00) or (
-            current_time.hour == 9 and current_time.minute == 59):
-        return lastPrice, todayOpenPrice
-    if not todayOpenPrice:
-        for i in range(1, 10):
+    days_to_check = 20
+    current_day = datetime.datetime.now().date()
+    todayOpenPrice = None
+    # Цикл для прохода по предыдущим дням
+
+    for i in range(1, days_to_check + 1):  # Начинаем с 1 для вчерашнего дня:
+        current_date_to_check = current_day - timedelta(days=i)
+        print("current_date_to_check",current_date_to_check)
+        current_date_str = current_date_to_check.strftime('%Y-%m-%d')
+        print(holidays,"holidays")
+        if current_date_str not in holidays and current_date_to_check.weekday() < 5:  # Проверка, что дата не входит в список выходных и является рабочим днем
+            print("current_date_str",current_date_str)
             todayOpenPrice = await client.market_data.get_candles(
                 figi=figi_current,
-                from_=start_time + timedelta(minutes=i), to=end_time + timedelta(minutes=i),
-                interval=CandleInterval.CANDLE_INTERVAL_1_MIN
+                from_=datetime.datetime.now()-timedelta(days=i), to=datetime.datetime.now()-timedelta(days=i-1),
+                interval=CandleInterval.CANDLE_INTERVAL_DAY
             )
-            if todayOpenPrice:
-                break
-    return lastPrice, todayOpenPrice
+        if todayOpenPrice:
+            # Если свечи найдены, завершаем цикл
+            return lastPrice, todayOpenPrice
+
 
 
 # получение выходных, чтобы в эти дни не получать данные по свечам.
@@ -39,7 +46,7 @@ def get_weekend_dates():
     first_day = last_month.replace(day=1)
 
     free_dates = []
-    for ptr in holidays.RU(years=datetime.today().year).items():
+    for ptr in holidays.RU(years=datetime.datetime.today().year).items():
         date_str = ptr[0].strftime("%Y-%m-%d")
         free_dates.append(date_str)
     while first_day <= today:
