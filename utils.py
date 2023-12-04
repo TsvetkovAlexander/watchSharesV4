@@ -23,11 +23,11 @@ async def find_prices(figi_current, marketdata, arr_times_figi_volume, medium_pr
 
     for i in range(1, days_to_check + 1):  # Начинаем с 1 для вчерашнего дня:
         current_date_to_check = current_day - timedelta(days=i)
-        print("current_date_to_check",current_date_to_check)
+        # print("current_date_to_check",current_date_to_check)
         current_date_str = current_date_to_check.strftime('%Y-%m-%d')
-        print(holidays,"holidays")
+        # print(holidays,"holidays")
         if current_date_str not in holidays and current_date_to_check.weekday() < 5:  # Проверка, что дата не входит в список выходных и является рабочим днем
-            print("current_date_str",current_date_str)
+            # print("current_date_str",current_date_str)
             todayOpenPrice = await client.market_data.get_candles(
                 figi=figi_current,
                 from_=datetime.datetime.now()-timedelta(days=i), to=datetime.datetime.now()-timedelta(days=i-1),

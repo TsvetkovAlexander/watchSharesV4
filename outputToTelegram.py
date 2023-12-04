@@ -119,7 +119,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
 
-        # bot.send_message(channel_id, message)
+        bot.send_message(channel_id, message)
 
         print(message)
         # print(ticker, " ", name,'\n',
@@ -151,5 +151,5 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
 
-        # bot.send_message(channel_id, message)
+        bot.send_message(channel_id, message)
         print(message)
