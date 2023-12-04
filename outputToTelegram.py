@@ -1,7 +1,19 @@
 import datetime
-
+import os
 import utils
+import telebot
 
+# Указываем токен вашего бота
+API_TOKEN = os.environ['API_TOKEN']
+
+# Инициализация бота
+bot = telebot.TeleBot(API_TOKEN)
+
+# Функция для вывода данных в канал Telegram
+def Output_telegram():
+    channel_id = -1002101810065  # Айди вашего канала
+    message = "Ваши данные для вывода в канал"
+    bot.send_message(channel_id, message)
 
 async def print_anomal_volume(client, ticker, marketdata,
                               volume,
@@ -44,7 +56,6 @@ async def print_anomal_volume(client, ticker, marketdata,
                 old_arr_times_direction[i][2] = 0
                 # print(tmp_buy, "tmp_buy")
                 # print(tmp_sell, "tmp_sell")
-        print("Минутное время старое")
     else:
         for i, el in enumerate(arr_times_direction):
             if el[0] == marketdata.candle.figi:
@@ -77,6 +88,7 @@ async def print_anomal_volume(client, ticker, marketdata,
         buy_text = "покупка"
         sell_text = "продажа"
     # print("marketdata",marketdata.candle)
+    channel_id = -1002101810065
     if total_volume != 0:
         # print(marketdata.candle.volume, "marketdata.candle.volume")
         # print(storage_volume, "storage_volume")
@@ -84,27 +96,61 @@ async def print_anomal_volume(client, ticker, marketdata,
         # print(storage_volume,"storage_volume")
         # print(marketdata.candle, "marketdata.candle.volume")
         # print(storage_volume, "storage_volume:", volume, "Обьем:",storage_volumeRub, "storage_volumeRub", marketdata.candle.volume, "marketdata.candle.volume")
-        print(ticker, " ", name,'\n',
-              "пороговый обьем:", volume, "Обьем:",
-              float(round(float((marketdata.candle.volume * medium_price  - storage_volumeRub) / 100))) / 10, "M₽",
-              "(", (marketdata.candle.volume - storage_volume), "лотов)", '\n',
-              "число раз за минуту:", times + 1, '\n',
-              "текущая цена:", Price_Now, '\n',
-              "Изменение цены:", '\n'
-                                 "  на объеме:", percentage_change, "%", '\n',
-              "  за день:", percentage_change_today, "%", '\n',
-              f"{buy_text}: {buy_percentage}%, {sell_text}: {sell_percentage}%",
-              "Время:", datetime.datetime.now().replace(microsecond=0))
+
+         # Айди вашего канала
+        def arrow(percentage):
+            return "⬆️" if float(percentage) > 0 else "⬇️"
+
+        # Используйте эту функцию для определения значения для вывода
+        arrow_symbol = arrow(percentage_change)
+
+        # Составьте сообщение с желаемым форматированием
+        message = (arrow_symbol + " " + "#" + ticker + " " + str(
+                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽" +
+                   str(percentage_change) + "%" + '\n' +
+                   "🔷 Аномальный объем" + '\n' +
+                   name + '\n' +
+                   "Объём: " + str(
+                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
+                   str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
+                   "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
+                   "Цена: " + str(Price_Now) + "₽" + '\n' +
+                   "Изменение цены:" + '\n' +
+                   "    на объеме: " + str(percentage_change) + "%" + '\n' +
+                   "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
+                   "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
+
+        bot.send_message(channel_id, message)
+
+        print(message)
+        # print(ticker, " ", name,'\n',
+        #       "пороговый обьем:", volume, "Обьем:",
+        #       float(round(float((marketdata.candle.volume * medium_price  - storage_volumeRub) / 100))) / 10, "M₽",
+        #       "(", (marketdata.candle.volume - storage_volume), "лотов)", '\n',
+        #       "число раз за минуту:", times + 1, '\n',
+        #       "текущая цена:", Price_Now, '\n',
+        #       "Изменение цены:", '\n'
+        #                          "  на объеме:", percentage_change, "%", '\n',
+        #       "  за день:", percentage_change_today, "%", '\n',
+        #       f"{buy_text}: {buy_percentage}%, {sell_text}: {sell_percentage}%",
+        #       "Время:", datetime.datetime.now().replace(microsecond=0))
 
     else:
-        print(ticker, " ", name, '\n',
-              "пороговый обьем:", volume, "Обьем:",
-              float(round(float((marketdata.candle.volume * medium_price  - storage_volumeRub) / 100))) / 10, "M₽",
-              "(", (marketdata.candle.volume - storage_volume), "лотов)", '\n',
-              "число раз за минуту:", times + 1, '\n',
-              "текущая цена:", Price_Now, '\n',
-              "Изменение цены:", '\n'
-                                 "  на объеме:", percentage_change, "%", '\n',
+        message = ("#" + ticker + " " + str(
+            round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽" +
+                   str(percentage_change) + "%" + '\n' +
+                   "🔷 Аномальный объем" + '\n' +
+                   name + '\n' +
+                   "Объём: " + str(
+                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
+                   str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
+                   # "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
+                   # "Цена: " + str(Price_Now) + "₽" + '\n' +
+                   "Не удалось определить пропорцию покупки и продажи"'\n'
+                   "Изменение цены:" + '\n' +
+                   "    на объеме: " + str(percentage_change) + "%" + '\n' +
+                   "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
+                   "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
 
-              "не удалось определить пропорцию покупки и продажи")
-
+        bot.send_message(channel_id, message)
+        print(message)

@@ -130,9 +130,9 @@ async def monitoring(dict_max_volume):
                     # если нашли совпадение по фиги из стрима и из массива, полученного из базы
                     if figi_current == marketdata.candle.figi:
                         # если срабатывает аномальный объем
-                        if marketdata.candle.volume * ((utils.cast_money(marketdata.candle.high)+utils.cast_money(marketdata.candle.low))/2) > volume:
-                            medium_price = (utils.cast_money(marketdata.candle.high) + utils.cast_money(
-                                marketdata.candle.low)) / 2
+                        medium_price = (utils.cast_money(marketdata.candle.high) + utils.cast_money(
+                            marketdata.candle.low)) / 2
+                        if (marketdata.candle.volume * medium_price) > volume: ##and ((marketdata.candle.volume * medium_price) > 3000000)
                             # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
 
                             # получаем текущее время для обновления массивов аномальных объемов
@@ -149,8 +149,9 @@ async def monitoring(dict_max_volume):
                                                                            arr_times_direction,
                                                                            arr_times_figi_volume,
                                                                            old_arr_times_direction,
-                                                                           old_time_for_direction,medium_price,name,
-                                                                           times=0, storage_volume=0,storage_volumeRub=0 )
+                                                                           old_time_for_direction, medium_price, name,
+                                                                           times=0, storage_volume=0,
+                                                                           storage_volumeRub=0)
 
                             else:
                                 # считаем сколько раз было уже аномальных объемов
@@ -163,12 +164,21 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_direction,
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
-                                                                               old_time_for_direction,medium_price,name,
-                                                                               times, storage_volume=0,storage_volumeRub=0)
+                                                                               old_time_for_direction, medium_price,
+                                                                               name,
+                                                                               times, storage_volume=0,
+                                                                               storage_volumeRub=0)
 
-                                storage_volume,storage_volumeRub = utils.countVolume(arr_times_figi_volume, figi_current)
-                                if times > 0 and (marketdata.candle.volume * medium_price) > (volume + storage_volumeRub):
-                                    print("marketdata.candle.volume",marketdata.candle.volume,"medium_price",medium_price, " marketdata.candle.volume * medium_price",marketdata.candle.volume * medium_price, " volume",volume, "storage_volumeRub", storage_volumeRub, "volume + storage_volumeRub",volume + storage_volumeRub)
+                                storage_volume, storage_volumeRub = utils.countVolume(arr_times_figi_volume,
+                                                                                      figi_current)
+                                if times > 0 and (marketdata.candle.volume * medium_price) > (
+                                        volume + storage_volumeRub): ##and ((marketdata.candle.volume * medium_price) > 3000000)
+
+                                    # print("marketdata.candle.volume", marketdata.candle.volume, "medium_price",
+                                    #       medium_price, " marketdata.candle.volume * medium_price",
+                                    #       marketdata.candle.volume * medium_price, " volume", volume,
+                                    #       "storage_volumeRub", storage_volumeRub, "volume + storage_volumeRub",
+                                    #       volume + storage_volumeRub)
                                     times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
                                     await outputToTelegram.print_anomal_volume(client, ticker, marketdata,
                                                                                volume,
@@ -176,6 +186,6 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_direction,
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
-                                                                               old_time_for_direction,medium_price,name,
+                                                                               old_time_for_direction, medium_price,
+                                                                               name,
                                                                                times, storage_volume, storage_volumeRub)
-
