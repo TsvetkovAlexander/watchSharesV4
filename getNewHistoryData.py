@@ -68,7 +68,7 @@ async def get_history_candles():
     await update_db(test_df)
     dict_max_volume = get_all_max_volume(test_df)
     for key, value in dict_max_volume.items():
-        new_volume = value['volume'] * value['lot']
+        new_volume = value['volume']
         value['volume'] = new_volume
         dict_max_volume[key] = value
 

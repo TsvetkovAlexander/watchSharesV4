@@ -20,7 +20,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                               figi_current,
                               arr_times_direction,
                               arr_times_figi_volume,
-                              old_arr_times_direction, old_time_for_direction,medium_price,name,holidays,
+                              old_arr_times_direction, old_time_for_direction,medium_price,name,holidays,lot,
                               times, storage_volume,storage_volumeRub):
 
     current_time = datetime.datetime.now().time()
@@ -97,20 +97,27 @@ async def print_anomal_volume(client, ticker, marketdata,
         # print(storage_volume, "storage_volume:", volume, "Обьем:",storage_volumeRub, "storage_volumeRub", marketdata.candle.volume, "marketdata.candle.volume")
 
          # Айди вашего канала
-        def arrow(percentage):
-            return "⬆️" if float(percentage) > 0 else "⬇️"
+        def arrow(buy_percentage, sell_percentage):
+            if buy_percentage > sell_percentage:
+                return "⬆️"
+            elif buy_percentage == sell_percentage:
+                return "⬆️⬇️"
+            else:
+                return "⬇️"
+            # Используйте эту функцию для определения значения для вывода
+
+        arrow_symbol = arrow(buy_percentage, sell_percentage)
 
         # Используйте эту функцию для определения значения для вывода
-        arrow_symbol = arrow(percentage_change)
 
         # Составьте сообщение с желаемым форматированием
         message = (arrow_symbol + " " + "#" + ticker + " " + str(
-                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽" +
+                    round(float((marketdata.candle.volume * medium_price *lot - storage_volumeRub) / 1000000), 2)) + "M₽" +
                    str(percentage_change) + "%" + '\n' +
                    "🔷 Аномальный объем" + '\n' +
                    name + '\n' +
                    "Объём: " + str(
-                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
+                    round(float((marketdata.candle.volume * medium_price*lot  - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
                    str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
                    "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
                    "Цена: " + str(Price_Now) + "₽" + '\n' +
@@ -136,12 +143,12 @@ async def print_anomal_volume(client, ticker, marketdata,
 
     else:
         message = ("#" + ticker + " " + str(
-            round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽" +
+            round(float((marketdata.candle.volume * medium_price*lot - storage_volumeRub) / 1000000), 2)) + "M₽" +
                    str(percentage_change) + "%" + '\n' +
                    "🔷 Аномальный объем" + '\n' +
                    name + '\n' +
                    "Объём: " + str(
-                    round(float((marketdata.candle.volume * medium_price - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
+                    round(float((marketdata.candle.volume * medium_price*lot  - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
                    str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
                    # "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
                    # "Цена: " + str(Price_Now) + "₽" + '\n' +

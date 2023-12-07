@@ -126,7 +126,7 @@ async def monitoring(dict_max_volume):
                 # if marketdata.candle.volume > 1:
                 # получаем значение для каждого элемента, который мы получили из базы
                 for ticker, value in dict_max_volume.items():
-                    ticker, volume, figi_current, name = ticker, value['volume'], value['figi'], value['name']
+                    ticker, volume, figi_current, name, lot = ticker, value['volume'], value['figi'], value['name'], value['lot']
                     # если нашли совпадение по фиги из стрима и из массива, полученного из базы
                     if figi_current == marketdata.candle.figi:
                         # если срабатывает аномальный объем
@@ -149,7 +149,7 @@ async def monitoring(dict_max_volume):
                                                                            arr_times_direction,
                                                                            arr_times_figi_volume,
                                                                            old_arr_times_direction,
-                                                                           old_time_for_direction, medium_price, name,holidays,
+                                                                           old_time_for_direction, medium_price, name,holidays,lot,
                                                                            times=0, storage_volume=0,
                                                                            storage_volumeRub=0)
 
@@ -165,7 +165,7 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
                                                                                old_time_for_direction, medium_price,
-                                                                               name,holidays,
+                                                                               name,holidays,lot,
                                                                                times, storage_volume=0,
                                                                                storage_volumeRub=0)
 
@@ -187,5 +187,5 @@ async def monitoring(dict_max_volume):
                                                                                arr_times_figi_volume,
                                                                                old_arr_times_direction,
                                                                                old_time_for_direction, medium_price,
-                                                                               name,holidays,
+                                                                               name,holidays,lot,
                                                                                times, storage_volume, storage_volumeRub)
