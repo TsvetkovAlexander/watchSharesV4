@@ -10,10 +10,7 @@ API_TOKEN = os.environ['API_TOKEN']
 bot = telebot.TeleBot(API_TOKEN)
 
 # Функция для вывода данных в канал Telegram
-def Output_telegram():
-    channel_id = -1002101810065  # Айди вашего канала
-    message = "Ваши данные для вывода в канал"
-    bot.send_message(channel_id, message)
+
 
 async def print_anomal_volume(client, ticker, marketdata,
                               volume,
@@ -87,7 +84,7 @@ async def print_anomal_volume(client, ticker, marketdata,
         buy_text = "покупка"
         sell_text = "продажа"
     # print("marketdata",marketdata.candle)
-    channel_id = -1002101810065
+    channel_id = -1002135757850
     if total_volume != 0:
         # print(marketdata.candle.volume, "marketdata.candle.volume")
         # print(storage_volume, "storage_volume")
