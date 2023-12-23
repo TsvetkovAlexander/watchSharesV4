@@ -1,4 +1,4 @@
 class GlobalSetting:
-    days_before = 10
-    how_old = 10
-    quantile = 99.7
+    days_before = 60
+    how_old = 60
+    quantile = 99.73

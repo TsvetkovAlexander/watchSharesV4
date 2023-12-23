@@ -132,7 +132,7 @@ async def monitoring(dict_max_volume):
                         # если срабатывает аномальный объем
                         medium_price = (utils.cast_money(marketdata.candle.high) + utils.cast_money(
                             marketdata.candle.low)) / 2
-                        if (marketdata.candle.volume * medium_price) > volume: ##and ((marketdata.candle.volume * medium_price) > 3000000)
+                        if (marketdata.candle.volume * medium_price) > volume and ((marketdata.candle.volume * medium_price) > 3000000): ##and ((marketdata.candle.volume * medium_price) > 3000000)
                             # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
 
                             # получаем текущее время для обновления массивов аномальных объемов
@@ -172,7 +172,7 @@ async def monitoring(dict_max_volume):
                                 storage_volume, storage_volumeRub = utils.countVolume(arr_times_figi_volume,
                                                                                       figi_current)
                                 if times > 0 and (marketdata.candle.volume * medium_price) > (
-                                        volume + storage_volumeRub): ##and ((marketdata.candle.volume * medium_price) > 3000000)
+                                        volume + storage_volumeRub) and ((marketdata.candle.volume * medium_price) > 3000000): ##and ((marketdata.candle.volume * medium_price) > 3000000)
 
                                     # print("marketdata.candle.volume", marketdata.candle.volume, "medium_price",
                                     #       medium_price, " marketdata.candle.volume * medium_price",

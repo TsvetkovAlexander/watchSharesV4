@@ -112,9 +112,8 @@ async def print_anomal_volume(client, ticker, marketdata,
 
         # Составьте сообщение с желаемым форматированием
         message = (arrow_symbol + " " + "#" + ticker + " " + str(
-                    round(float((marketdata.candle.volume * medium_price *lot - storage_volumeRub) / 1000000), 2)) + "M₽" +
+                    round(float((marketdata.candle.volume * medium_price *lot - storage_volumeRub) / 1000000), 2)) + "M₽ " +
                    str(percentage_change) + "%" + '\n' +
-                   "🔷 Аномальный объем" + '\n' +
                    name + '\n' +
                    "Объём: " + str(
                     round(float((marketdata.candle.volume * medium_price*lot  - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
@@ -124,7 +123,8 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "Изменение цены:" + '\n' +
                    "    на объеме: " + str(percentage_change) + "%" + '\n' +
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
-                   "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
+                   "Время: " + str(datetime.datetime.now().replace(microsecond=0)) + '\n' +
+                   "🔷 Аномальный объем")
 
         bot.send_message(channel_id, message)
 
@@ -143,9 +143,9 @@ async def print_anomal_volume(client, ticker, marketdata,
 
     else:
         message = ("#" + ticker + " " + str(
-            round(float((marketdata.candle.volume * medium_price*lot - storage_volumeRub) / 1000000), 2)) + "M₽" +
+            round(float((marketdata.candle.volume * medium_price*lot - storage_volumeRub) / 1000000), 2)) + "M₽ " +
                    str(percentage_change) + "%" + '\n' +
-                   "🔷 Аномальный объем" + '\n' +
+
                    name + '\n' +
                    "Объём: " + str(
                     round(float((marketdata.candle.volume * medium_price*lot  - storage_volumeRub) / 1000000), 2)) + "M₽ (" +
@@ -156,7 +156,9 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "Изменение цены:" + '\n' +
                    "    на объеме: " + str(percentage_change) + "%" + '\n' +
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
-                   "Время: " + str(datetime.datetime.now().replace(microsecond=0)))
+                   "Время: " + str(datetime.datetime.now().replace(microsecond=0))+'\n' +
+                   "🔷 Аномальный объем"
+                   )
 
         bot.send_message(channel_id, message)
         print(message)
