@@ -1,3 +1,4 @@
+import asyncio
 import os
 from datetime import datetime
 
@@ -67,9 +68,9 @@ async def get_history_candles():
 
     await load_db(test_df)
     dict_max_volume = get_all_max_volume(test_df)
-    for key, value in dict_max_volume.items():
-        new_volume = value['volume']
-        value['volume'] = new_volume
-        dict_max_volume[key] = value
-
     return dict_max_volume
+
+if __name__ == "__main__":
+    asyncio.run(get_history_candles())
+
+
