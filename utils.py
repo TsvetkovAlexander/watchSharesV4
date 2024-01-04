@@ -34,6 +34,7 @@ async def find_prices(figi_current, marketdata, arr_times_figi_volume, medium_pr
                 interval=CandleInterval.CANDLE_INTERVAL_DAY
             )
         if todayOpenPrice:
+            # print(lastPrice, todayOpenPrice, "lastPrice, todayOpenPrice")
             # Если свечи найдены, завершаем цикл
             return lastPrice, todayOpenPrice
 
@@ -46,17 +47,20 @@ def get_weekend_dates():
     first_day = last_month.replace(day=1)
 
     free_dates = []
+
     for ptr in holidays.RU(years=datetime.datetime.today().year).items():
         date_str = ptr[0].strftime("%Y-%m-%d")
         free_dates.append(date_str)
+
     while first_day <= today:
-        # Проверка, является ли день выходным (5 или 6 - Сб или Вс)
-        if first_day.weekday() == 5 or first_day.weekday() == 6:
+        if first_day.weekday() == 5 or first_day.weekday() == 6:  # Проверка, является ли день выходным (5 или 6 - Сб или Вс)
             free_dates.append(first_day.strftime("%Y-%m-%d"))
         first_day += timedelta(days=1)
 
-    return free_dates
-
+    work_days = ['2024-01-03','2024-01-04','2024-01-05']  # массив рабочих дней
+    non_working_days = [date for date in free_dates if date not in work_days]  # создаем новый список невыходных дней
+    print(" non_working_days", non_working_days)
+    return non_working_days
 
 def is_holiday(day):
     holidays_list = holidays.RU(years=datetime.datetime.today().year).keys()

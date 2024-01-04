@@ -12,7 +12,14 @@ load_dotenv()
 
 async def main():
     # Загружаем в базу новые данные за последние дни и получаем значения аномальных объемов
-    dict_max_volume = await getNewHistoryData.get_history_candles()
+    try:
+        dict_max_volume = await getNewHistoryData.get_history_candles()
+    except Exception as error:
+        print('An exception occurred: {}'.format(error))
+        log_file = open("getNewHistoryData.log", "a")
+        log_file.write("{} - {}\n".format(str(datetime.now()), str(error)))
+        log_file.close()
+
     print(dict_max_volume)
     # Запускаем функцию мониторинга аномальных объемов
     while True:

@@ -65,7 +65,7 @@ async def get_history_candles():
     # Из таблицы удаляются тикеры по которым нет данных
     test_df = excel_data_df[~excel_data_df.ticker.isin([])][['ticker', 'figi', 'name', 'lot']]
 
-    await load_db(test_df)
+    await update_db(test_df)
     dict_max_volume = get_all_max_volume(test_df)
     for key, value in dict_max_volume.items():
         new_volume = value['volume']
