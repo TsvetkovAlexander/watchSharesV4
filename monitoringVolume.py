@@ -132,13 +132,13 @@ async def monitoring(dict_max_volume):
                         # если срабатывает аномальный объем
                         medium_price = (utils.cast_money(marketdata.candle.high) + utils.cast_money(
                             marketdata.candle.low)) / 2
-                        if (marketdata.candle.volume * medium_price) > volume and ((marketdata.candle.volume * medium_price) > 4000000): ##and ((marketdata.candle.volume * medium_price) > 3000000)
+                        if (marketdata.candle.volume * medium_price) > volume and ((marketdata.candle.volume * medium_price *lot) > 5000000): ##and ((marketdata.candle.volume * medium_price) > 3000000)
                             # если 2 повторения, то аномальный объем должен быть в 2 раза больше, поэтому - volume
 
                             # получаем текущее время для обновления массивов аномальных объемов
                             now = datetime.datetime.now().minute
                             # если новая минута, то все обновляем
-                            if current_time_for_volume != now:
+                            if current_time_for_volume != now and now == marketdata.candle.time.minute:
                                 # Это массив наших фиги, где мы считаем их повторения. Приравниваем его к 0
                                 # 1 элемент время, далее фиги
                                 arr_times_figi_volume = []
@@ -158,6 +158,7 @@ async def monitoring(dict_max_volume):
                                 times = sum(1 for item in arr_times_figi_volume if item[0] == figi_current)
 
                                 if times == 0:
+                                    print("times == 0")
                                     await outputToTelegram.print_anomal_volume(client, ticker, marketdata,
                                                                                volume,
                                                                                figi_current,
@@ -171,8 +172,9 @@ async def monitoring(dict_max_volume):
 
                                 storage_volume, storage_volumeRub = utils.countVolume(arr_times_figi_volume,
                                                                                       figi_current)
-                                if times > 0 and (marketdata.candle.volume * medium_price) > (
-                                        volume + storage_volumeRub) and ((marketdata.candle.volume * medium_price) > 4000000*times ): ##and ((marketdata.candle.volume * medium_price) > 3000000)
+                                if times > 0 and (((marketdata.candle.volume * medium_price) > (
+                                        volume + storage_volumeRub)) and ((
+                                        marketdata.candle.volume * medium_price * lot - storage_volumeRub * lot)) > 5000000):
 
                                     # print("marketdata.candle.volume", marketdata.candle.volume, "medium_price",
                                     #       medium_price, " marketdata.candle.volume * medium_price",

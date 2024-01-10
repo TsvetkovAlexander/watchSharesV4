@@ -3,3 +3,6 @@
 2024-01-03 16:43:55.831145 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=4, message=None))
 2024-01-03 20:52:52.690118 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=7, message=None))
 2024-01-03 20:52:54.233757 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=5, message=None))
+2024-01-08 10:13:42.151129 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=20, message=None))
+2024-01-08 10:13:54.354706 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=8, message=None))
+2024-01-08 10:13:59.454790 - (<StatusCode.RESOURCE_EXHAUSTED: (8, 'resource exhausted')>, '', Metadata(tracking_id=None, ratelimit_limit='300, 300;w=60', ratelimit_remaining=0, ratelimit_reset=3, message=None))

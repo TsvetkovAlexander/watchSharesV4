@@ -79,7 +79,7 @@ async def print_anomal_volume(client, ticker, marketdata,
         buy_text = "покупка"
         sell_text = "продажа"
     # print("marketdata",marketdata.candle)
-    channel_id = -1001629166135
+
     if total_volume != 0:
 
         # Айди вашего канала
@@ -95,14 +95,14 @@ async def print_anomal_volume(client, ticker, marketdata,
         arrow_symbol = arrow(buy_percentage, sell_percentage)
 
         # Используйте эту функцию для определения значения для вывода
-
+        print(storage_volume,"storage_volume")
         # Составьте сообщение с желаемым форматированием
         message = (arrow_symbol + " " + "#" + ticker + " " + str(
-            round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub) / 1000000), 2)) + "M₽ " +
+            round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub*lot) / 1000000), 2)) + "M₽ " +
                    str(percentage_change) + "%" + '\n' +
                    name + '\n' +
                    "Объём: " + str(
-                    round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub) / 1000000),
+                    round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub*lot) / 1000000),
                           2)) + "M₽ (" +
                    str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
                    "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
@@ -112,9 +112,9 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)) + '\n' +
                    "🔷 Аномальный объем" + '\n'+
-                   "Подключить бота-шпиона @GrigorievSPY_bot")
+                   "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy")
 
-        bot.send_message(channel_id, message)
+
 
         print(message)
     else:
@@ -124,12 +124,12 @@ async def print_anomal_volume(client, ticker, marketdata,
               old_time_for_direction,'old_time_for_direction')
 
         message = ("#" + ticker + " " + str(
-            round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub) / 1000000), 2)) + "M₽ " +
+            round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub*lot) / 1000000), 2)) + "M₽ " +
                    str(percentage_change) + "%" + '\n' +
 
                    name + '\n' +
                    "Объём: " + str(
-                    round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub) / 1000000),
+                    round(float((marketdata.candle.volume * medium_price * lot - storage_volumeRub*lot) / 1000000),
                           2)) + "M₽ (" +
                    str(marketdata.candle.volume - storage_volume) + " лотов)" + '\n' +
                    # "Покупка: " + str(buy_percentage) + "% Продажа: " + str(sell_percentage) + "%" + '\n' +
@@ -140,8 +140,8 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)) + '\n' +
                    "🔷 Аномальный объем" + '\n'+
-                   "Подключить бота-шпиона @GrigorievSPY_bot"
+                   "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy"
                    )
         print(message)
-        bot.send_message(channel_id, message)
+
 
