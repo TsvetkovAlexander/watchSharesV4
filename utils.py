@@ -508,7 +508,7 @@ arrInstrument = [
         interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
     ),
     CandleInstrument(
-        figi="BBG00QPYJ5H0",  # TCSG
+        figi="TCS00A107UL4",  # TCSG
         interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
     ),
     CandleInstrument(
@@ -686,6 +686,30 @@ arrInstrument = [
     ),
     CandleInstrument(
         figi="BBG00475K6C3",  # CHMF
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A0ZZFS9",  # LEAS
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A0JVJQ8",  # MGKL
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A107J11",  # DELI
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A0JPP37",  # UGLD
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A0ZZAC4",  # SVCB
+        interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+    ),
+    CandleInstrument(
+        figi="TCS00A107ER5",  # DIAS
         interval=SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
     ),
 ]
@@ -993,7 +1017,7 @@ arrTradeInstrument = [  # Список акций и их фиги для пол
         figi="BBG000SR0YS4",  # LNZLP
     ),
     CandleInstrument(
-        figi="BBG00QPYJ5H0",  # TCSG
+        figi="TCS00A107UL4",  # TCSG
     ),
     CandleInstrument(
         figi="BBG004S681M2",  # SNGSP
@@ -1125,5 +1149,23 @@ arrTradeInstrument = [  # Список акций и их фиги для пол
     ),
     CandleInstrument(
         figi="BBG00475K6C3",  # CHMF
+    ),
+    CandleInstrument(
+        figi="TCS00A0ZZFS9",  # LEAS
+    ),
+    CandleInstrument(
+        figi="TCS00A0JVJQ8",  # MGKL
+    ),
+    CandleInstrument(
+        figi="TCS00A107J11",  # DELI
+    ),
+    CandleInstrument(
+        figi="TCS00A0JPP37",  # UGLD
+    ),
+    CandleInstrument(
+        figi="TCS00A0ZZAC4",  # SVCB
+    ),
+    CandleInstrument(
+        figi="TCS00A107ER5",  # DIAS
     ),
 ]
