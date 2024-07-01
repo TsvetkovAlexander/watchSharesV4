@@ -79,7 +79,7 @@ async def print_anomal_volume(client, ticker, marketdata,
         buy_text = "покупка"
         sell_text = "продажа"
     # print("marketdata",marketdata.candle)
-
+    channel_id =-1002153656823
     if total_volume != 0:
 
         # Айди вашего канала
@@ -114,7 +114,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "🔷 Аномальный объем" + '\n'+
                    "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy")
 
-
+        bot.send_message(channel_id, message)
 
         print(message)
     else:
@@ -143,5 +143,5 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy"
                    )
         print(message)
-
+        bot.send_message(channel_id, message)
 
