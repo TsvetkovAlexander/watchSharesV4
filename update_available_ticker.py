@@ -26,7 +26,7 @@ def update_available_ticker():
     with Client(TOKEN) as cl:
         instruments = cl.instruments
 
-        r = instruments.shares(instrument_status=InstrumentStatus.INSTRUMENT_STATUS_ALL).instruments
+        r = instruments.shares(instrument_status=InstrumentStatus.INSTRUMENT_STATUS_BASE).instruments
         ru_share = []
         for i in range(len(r)):
             rub = r[i].currency == 'rub'

@@ -111,8 +111,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    на объеме: " + str(percentage_change) + "%" + '\n' +
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)) + '\n' +
-                   "🔷 Аномальный объем" + '\n'+
-                   "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy")
+                   "🔷 Аномальный объем")
 
         bot.send_message(channel_id, message)
 
@@ -139,9 +138,7 @@ async def print_anomal_volume(client, ticker, marketdata,
                    "    на объеме: " + str(percentage_change) + "%" + '\n' +
                    "    за сегодня: " + str(percentage_change_today) + "%" + '\n' +
                    "Время: " + str(datetime.datetime.now().replace(microsecond=0)) + '\n' +
-                   "🔷 Аномальный объем" + '\n'+
-                   "Подключить бота-шпиона:"+ '\n'+  "https://t.me/grigorievspy"
-                   )
+                   "🔷 Аномальный объем")
         print(message)
         bot.send_message(channel_id, message)
 
