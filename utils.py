@@ -57,8 +57,8 @@ def get_weekend_dates():
             free_dates.append(first_day.strftime("%Y-%m-%d"))
         first_day += timedelta(days=1)
 
-    work_days = ['2024-01-03','2024-01-04','2024-01-05', '2024-01-08', '2024-04-27']  # массив рабочих дней
-    Not_Work_days = ['2024-05-01', '2024-05-09']
+    work_days = ['2024-01-03','2024-01-04','2024-01-06', '2025-01-08', '2025-01-06']  # массив рабочих дней
+    Not_Work_days = ['2024-05-01', '2024-05-09', '2025-01-07']
     non_working_days = [date for date in free_dates if date not in work_days] + Not_Work_days  # создаем новый список невыходных дней
     print(" non_working_days", non_working_days)
     return non_working_days
